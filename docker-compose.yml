@@ -1,0 +1,45 @@
+  version: "3.9"
+
+  services:
+    movieAPI:
+      image: movie-api:latest
+      container_name: movie-api
+      env_file: .env
+      ports:
+        - "8000:8000"
+      depends_on:
+        - db
+        - redis
+      networks:
+        - movie-api-network
+
+    db:
+      image: postgres:15
+      container_name: postgres
+      environment:
+        - POSTGRES_USER=${DB_USER}
+        - POSTGRES_PASSWORD=${DB_PASSWORD}
+        - POSTGRES_DB=${DB_NAME}
+      expose:
+        - "5432"
+      volumes:
+        - ./databases/pgdata:/var/lib/postgresql/data
+        - ./databases/init:/docker-entrypoint-initdb.d/
+      networks:
+        - movie-api-network
+
+    redis:
+      image: redis:7
+      container_name: redis
+      expose:
+        - "6379"
+      volumes:
+        - ./databases/redisdata/:/data
+      networks:
+        - movie-api-network
+
+
+  networks:
+    movie-api-network:
+      driver: bridge
+      internal: false

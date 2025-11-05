@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import redis
+from dotenv import load_dotenv
 import os
 import json
 
@@ -17,15 +18,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+load_dotenv()  # Load .env file
+
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = os.getenv("REDIS_PORT")
+
 db_conn = {
-    "dbname": "movies_db",
-    "user": "postgres",
-    "password": "1234",
-    "host": "localhost",
-    "port": "5432",
+    "dbname": DB_NAME,
+    "user": DB_USER,
+    "password": DB_PASSWORD,
+    "host": DB_HOST,
+    "port": DB_PORT,
 }
 
-redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)
+redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
 
 @app.get("/movies")
 def get_movies(director: str = Query("", alias="q")):

@@ -1,3 +1,5 @@
 backend/movies.csv
 venv
+.env
+databases
 
