@@ -51,6 +51,4 @@ jobs:
           ansible-playbook ansible/deploy.yml \
             -i ansible/inventory.ini \
             --private-key ~/.ssh/id_rsa \
-            -u ubuntu \
-            -e "ec2_public_ip=${{ secrets.EC2_HOST }}"
-
+            -u ubuntu
