@@ -23,7 +23,7 @@ jobs:
           
       - name: Add SSH config
         run: |
-          printf "Host ec2-docker\nHostName %s\nUser ubuntu\nIdentityFile ~/.ssh/id_rsa\nStrictHostKeyChecking no\nProxyCommand ssh -W %h:%p -q pure@xanderbit.cgitverse.com\n" "${{ secrets.EC2_HOST }}" > ~/.ssh/config
+          printf "Host ec2-docker\nHostName %s\nUser ubuntu\nIdentityFile ~/.ssh/id_rsa\nStrictHostKeyChecking no\nProxyCommand ssh -W %%h:%%p -q pure@xanderbit.cgitverse.com\n" "${{ secrets.EC2_HOST }}" > ~/.ssh/config
           chmod 600 ~/.ssh/config
 
       - name: Debug SSH key
