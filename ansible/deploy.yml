@@ -6,7 +6,7 @@
   vars:
     app_dir: /opt/myapp
     ec2_public_ip: "172.31.20.60"   # EC2  IP
-    project_dir: /home/fparmakli/movie-api  # local project path
+    project_dir: "{{ playbook_dir }}/.."  # local project path
 
   tasks:
   
