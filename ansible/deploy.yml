@@ -88,7 +88,7 @@
 
     - name: Copy .env file to EC2
       copy:
-        src: "{{ playbook_dir }}/.env"
+        src: "{{ project_dir }}/.env"
         dest: "{{ app_dir }}/.env"
         mode: '0600'
 

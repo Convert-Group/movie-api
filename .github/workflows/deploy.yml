@@ -20,7 +20,10 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY}}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          echo "StrictHostKeyChecking no" > ~/.ssh/config
+          
+      - name: Add SSH config
+        run: |
+          printf "Host ec2-docker\nHostName %s\nUser ubuntu\nIdentityFile ~/.ssh/id_rsa\nStrictHostKeyChecking no\n" "${{ secrets.EC2_HOST }}" > ~/.ssh/config
 
       - name: Debug SSH key
         run: |
@@ -39,7 +42,6 @@ jobs:
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
           echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
-        working-directory: ansible/
 
       - name: Install Ansible
         run: |
