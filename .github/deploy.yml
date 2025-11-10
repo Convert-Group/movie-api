@@ -2,7 +2,9 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ "main" ]
+    branches: 
+      - "main"
+      - "CI/CD"
   workflow_dispatch:
 
 jobs:
