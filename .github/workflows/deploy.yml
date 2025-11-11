@@ -5,6 +5,7 @@ on:
     branches: 
       - "main"
       - "CI/CD"
+      - "config/Prometheus"
   workflow_dispatch:
 
 jobs:
@@ -35,6 +36,8 @@ jobs:
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
           echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
+          echo "DATA_SOURCE_NAME=${{ secrets.DATA_SOURCE_NAME }}" >> .env
+
 
       - name: Install Ansible
         run: |
