@@ -26,14 +26,6 @@ jobs:
           printf "Host ec2-docker\nHostName %s\nUser ubuntu\nIdentityFile ~/.ssh/id_rsa\nStrictHostKeyChecking no\nProxyCommand ssh -W %%h:%%p -q pure@xanderbit.cgitverse.com\n" "${{ secrets.EC2_HOST }}" > ~/.ssh/config
           chmod 600 ~/.ssh/config
 
-      - name: Debug SSH key
-        run: |
-          echo "=== SSH dir ==="
-          ls -la ~/.ssh
-          echo "=== Key content (first lines) ==="
-          head -n 5 ~/.ssh/id_rsa
-
-
       - name: Create .env file
         run: |
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
