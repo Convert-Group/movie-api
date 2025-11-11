@@ -1,4 +1,3 @@
-  version: "3.9"
 
   services:
     movieAPI:
@@ -16,7 +15,7 @@
       networks:
         - movie-api-network
 
-    db:
+    postgres:
       image: postgres:15
       container_name: postgres
       environment:
