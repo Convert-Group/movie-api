@@ -1,2 +1,5 @@
 backend/movies.csv
+venv
+.env
+
 

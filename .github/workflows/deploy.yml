@@ -1,0 +1,52 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: 
+      - "main"
+      - "CI/CD"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        uses: kielabokkie/ssh-key-and-known-hosts-action@v1
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+          ssh-host: ${{ vars.SSH_PROXY_HOST }}
+          
+      - name: Add SSH config
+        run: |
+          printf "Host ec2-docker\nHostName %s\nUser ubuntu\nIdentityFile ~/.ssh/id_rsa\nStrictHostKeyChecking no\nProxyCommand ssh -W %%h:%%p -q pure@xanderbit.cgitverse.com\n" "${{ secrets.EC2_HOST }}" > ~/.ssh/config
+          chmod 600 ~/.ssh/config
+
+      - name: Create .env file
+        run: |
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+
+      - name: Upgrade Ansible
+        run: |
+          pip install --upgrade ansible
+
+
+      - name: Run Ansible Playbook
+        run: |
+          ansible-playbook ansible/deploy.yml \
+            -i ansible/inventory.ini
