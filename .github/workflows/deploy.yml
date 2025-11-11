@@ -4,8 +4,6 @@ on:
   push:
     branches: 
       - "main"
-      - "CI/CD"
-      - "config/Prometheus"
   workflow_dispatch:
 
 jobs:
