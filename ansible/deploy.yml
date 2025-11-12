@@ -99,6 +99,7 @@
 
 
     - name: Build and start application with Docker Compose
+      become: no
       command: docker compose -f docker-compose.yml up -d --build
       args:
         chdir: "{{ app_dir }}"
