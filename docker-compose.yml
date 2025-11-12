@@ -1,19 +1,27 @@
 
   services:
     movieAPI:
-      build:
-        context: .        # folder containing your Dockerfile
-        dockerfile: Dockerfile    # optional if named 'Dockerfile'
       image: movie-api:latest
-      container_name: movie-api
+      container_name: movieAPI
       env_file: .env
-      ports:
-        - "8000:8000"
+      expose:
+        - "8000"
       depends_on:
         - postgres
         - redis
       networks:
         - movie-api-network
+        
+    gateway-frontend:
+      image: gateway-frontend:latest
+      container_name: gateway-frontend
+      ports:
+        - "80:80"
+      depends_on:
+        - movieAPI
+      networks:
+        - movie-api-network
+
 
     postgres:
       image: postgres:15
