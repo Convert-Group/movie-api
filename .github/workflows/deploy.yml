@@ -29,6 +29,7 @@ jobs:
               - 'gateway/**'
 
   build-backend:
+    needs: detect-changes
     if: needs.detect-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -49,6 +50,7 @@ jobs:
           docker push 620914207029.dkr.ecr.eu-west-1.amazonaws.com/movie_api:movie-api
 
   build-frontend:
+    needs: detect-changes
     if: needs.detect-changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -69,6 +71,7 @@ jobs:
           docker push 620914207029.dkr.ecr.eu-west-1.amazonaws.com/movie_api:frontend
 
   build-gateway:
+    needs: detect-changes
     if: needs.detect-changes.outputs.gateway == 'true'
     runs-on: ubuntu-latest
     steps:
