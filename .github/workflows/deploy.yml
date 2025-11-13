@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - filters/matrix
   workflow_dispatch:
 
 jobs:
@@ -27,71 +28,60 @@ jobs:
             gateway:
               - 'gateway/**'
 
-  build-backend:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.backend == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
-      - name: Log in to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-      - name: Build backend image
-        run: |
-          docker build -t 620914207029.dkr.ecr.eu-west-1.amazonaws.com/movie_api:movie-api -f backend/Dockerfile ./backend
-      - name: Push backend image
-        run: |
-          docker push 620914207029.dkr.ecr.eu-west-1.amazonaws.com/movie_api:movie-api
 
-  build-frontend:
+  build-and-push:
     needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true'
+    name: Build and Push ${{ matrix.service }} to ECR
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
-      - name: Log in to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-      - name: Build frontend image
-        run: |
-          docker build -t 620914207029.dkr.ecr.eu-west-1.amazonaws.com/movie_api:frontend -f frontend/Dockerfile ./frontend
-      - name: Push frontend image
-        run: |
-          docker push 620914207029.dkr.ecr.eu-west-1.amazonaws.com/movie_api:frontend
 
-  build-gateway:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.gateway == 'true'
-    runs-on: ubuntu-latest
+    if: ${{ fromJSON('{
+      "backend": "' + needs.detect-changes.outputs.backend + '",
+      "frontend": "' + needs.detect-changes.outputs.frontend + '",
+      "gateway": "' + needs.detect-changes.outputs.gateway + '"
+    }')[matrix.service] == 'true' }}
+
+    strategy:
+      matrix:
+        service: [backend, frontend, gateway]
+        include:
+          - service: backend
+            context: ./backend
+            dockerfile: ./backend/Dockerfile
+            image: movie-api
+          - service: frontend
+            context: ./frontend
+            dockerfile: ./frontend/Dockerfile
+            image: frontend
+          - service: gateway
+            context: ./gateway
+            dockerfile: ./gateway/Dockerfile
+            image: gateway
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
+          aws-region: eu-west-1   # change to your AWS region
+
       - name: Log in to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-      - name: Build gateway image
+
+      - name: Build, Tag, and Push Image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPO_NAME: movie_api
         run: |
-          docker build -t 620914207029.dkr.ecr.eu-west-1.amazonaws.com/movie_api:gateway -f gateway/Dockerfile ./gateway
-      - name: Push gateway image
-        run: |
-          docker push 620914207029.dkr.ecr.eu-west-1.amazonaws.com/movie_api:gateway
+          docker build -t $ECR_REGISTRY/$REPO_NAME:${{matrix.image}} -f ${{ matrix.dockerfile }} ${{ matrix.context }}
+          docker push $ECR_REGISTRY/$REPO_NAME:${{matrix.image}}
 
   deploy:
-    needs: [build-backend, build-frontend, build-gateway]
+    needs: build-and-push
     runs-on: ubuntu-latest
     if: always() # Ensures deploy runs even if no images were built
     steps:
