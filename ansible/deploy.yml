@@ -92,10 +92,18 @@
         dest: "{{ app_dir }}/.env"
         mode: '0600'
 
+    - name: Stop running containers
+      become: false
+      shell: docker compose -f docker-compose.yml down --remove-orphans
+      args:
+        chdir: "{{ project_dir }}"
+      environment:
+        DOCKER_HOST: "ssh://ec2-docker"
+      delegate_to: localhost
+
     - name: Start application with Docker Compose over SSH
       become: false
       shell: |
-        docker compose -f docker-compose.yml down --remove-orphans
         docker compose -f docker-compose.yml pull &&
         docker compose -f docker-compose.yml up -d
       args:
