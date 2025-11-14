@@ -1,5 +1,6 @@
 from loguru import logger
 import os
+import sys
 
 LOG_DIR = "logs"
 LOG_FILE = f"{LOG_DIR}/app.log"
@@ -14,7 +15,7 @@ logger.remove()
 # Log format (JSON recommended)
 logger.add(
     sys.stdout,
-    format="{time} | {level} | {message}",
+    serialize=True,  # This outputs proper JSON
     level="INFO",
 )
 
