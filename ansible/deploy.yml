@@ -115,10 +115,11 @@
       delegate_to: localhost
 
     - name: Deploy stack using Docker Compose
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ project_dir }}"
-        build: false
-        pull: true
+        files:
+          - docker-compose.yml
+        pull: always
         state: present
       environment:
         DOCKER_HOST: "ssh://ec2-docker"
@@ -127,6 +128,7 @@
       retries: 5
       delay: 10
       until: compose_result is succeeded
+
       
     - name: Copy SQL file from EC2 host into container
       command: docker cp /tmp/init.sql postgres:/tmp/init.sql
